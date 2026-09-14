@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, CheckCircle2, Shield, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, Shield } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,14 +47,12 @@ export function AuthScreen() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center shadow-lg shadow-primary/30">
-              <img src="/icon.png" className="h-7 w-7 object-contain" alt="Erinlè" />
-            </div>
-            <div>
-              <h1 className="font-heading text-2xl font-bold">Erinlè</h1>
-              <p className="text-sm text-muted-foreground">Health Protocol Tracker</p>
-            </div>
-          </div>
+                      <img src="/icon.png" className="h-10 w-10 object-contain" alt="Erinlè" />
+                      <div>
+                        <h1 className="font-heading text-2xl font-bold">Erinlè</h1>
+                        <p className="text-sm text-muted-foreground">Health Protocol Tracker</p>
+                      </div>
+                    </div>
         </div>
 
         <div className="glass rounded-2xl p-8 shadow-2xl">
