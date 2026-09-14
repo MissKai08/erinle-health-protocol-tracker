@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation, NavLink } from "react-router-dom";
 import {
   Pill,
@@ -15,7 +15,8 @@ import {
   ChevronRight,
   Menu,
   X,
-  MessageSquare,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -44,7 +45,22 @@ const navigation = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
+  const [theme, setTheme] = useState<"default" | "erinle">("default");
   const location = useLocation();
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme") as "default" | "erinle" | null;
+    if (saved) {
+      setTheme(saved);
+      document.documentElement.setAttribute("data-theme", saved);
+    }
+  }, []);
+
+  const handleThemeChange = (newTheme: "default" | "erinle") => {
+    setTheme(newTheme);
+    localStorage.setItem("theme", newTheme);
+    document.documentElement.setAttribute("data-theme", newTheme);
+  };
 
   return (
     <TooltipProvider>
@@ -166,29 +182,45 @@ export function Sidebar() {
           })}
         </nav>
 
-        {/* Chat / Ask button at bottom */}
-        <div className="p-4 border-t border-sidebar-border">
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                className={cn(
-                  "w-full justify-start gap-3 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20",
-                  collapsed && "justify-center px-2"
-                )}
-                onClick={() => {
-                  // Open chat drawer - will be handled by parent
-                  window.dispatchEvent(new CustomEvent('open-chat'));
-                }}
-              >
-                <MessageSquare className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
-                {!collapsed && <span className="font-medium">Ask</span>}
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              Ask
-            </TooltipContent>
-          </Tooltip>
-        </div>
+        {/* Theme selector at bottom */}
+                <div className="p-4 border-t border-sidebar-border">
+                  <div className={cn("flex gap-2", collapsed ? "flex-col items-center" : "flex-row")}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={theme === "default" ? "default" : "ghost"}
+                          size="icon"
+                          className={cn(
+                            "h-9 w-9",
+                            theme === "default" && "bg-sidebar-primary text-sidebar-primary-foreground"
+                          )}
+                          onClick={() => handleThemeChange("default")}
+                          aria-label="Default theme"
+                        >
+                          <Moon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">Default</TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant={theme === "erinle" ? "default" : "ghost"}
+                          size="icon"
+                          className={cn(
+                            "h-9 w-9",
+                            theme === "erinle" && "bg-sidebar-primary text-sidebar-primary-foreground"
+                          )}
+                          onClick={() => handleThemeChange("erinle")}
+                          aria-label="Erinlè theme"
+                        >
+                          <Sun className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="right">Erinlè</TooltipContent>
+                    </Tooltip>
+                  </div>
+                </div>
       </aside>
     </TooltipProvider>
   );

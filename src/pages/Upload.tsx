@@ -14,7 +14,7 @@ import { Upload as UploadIcon, FileText, File, AlertCircle, CheckCircle, X, Load
 import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/use-toast";
 
-const SUPPORTED_EXTENSIONS = [".html", ".htm", ".mht", ".mhtml", ".docx", ".pdf"];
+const SUPPORTED_EXTENSIONS = [".html", ".htm", ".mht", ".mhtml", ".docx", ".pdf", ".md", ".markdown"];
 const UNSUPPORTED_EXTENSIONS = [".doc", ".xlsx", ".xls", ".ppt", ".pptx"];
 
 interface UploadResult {
@@ -78,6 +78,9 @@ export default function Upload() {
     }
     if (ext === ".docx") {
       return await parseDocxToMarkdown(file);
+    }
+    if (ext === ".md" || ext === ".markdown") {
+      return text;
     }
     return text;
   };
@@ -238,7 +241,7 @@ export default function Upload() {
                 <span className="text-sm text-muted-foreground">
                   {file ? file.name : "Click to upload or drag & drop"}
                 </span>
-                <input id="file" type="file" className="hidden" accept=".html,.htm,.mht,.mhtml,.docx,.pdf" onChange={handleFileChange} />
+                <input id="file" type="file" className="hidden" accept=".html,.htm,.mht,.mhtml,.docx,.pdf,.md,.markdown" onChange={handleFileChange} />
               </label>
             </div>
             {file && (
@@ -252,7 +255,7 @@ export default function Upload() {
               </div>
             )}
             <div className="mt-2 text-xs text-muted-foreground">
-              Supported: .html, .htm, .mht, .mhtml, .docx, .pdf (text-based only)
+              Supported: .html, .htm, .mht, .mhtml, .docx, .pdf, .md, .markdown (text-based only)
             </div>
           </div>
 
@@ -269,6 +272,7 @@ export default function Upload() {
                   <SelectItem value="article">Article</SelectItem>
                   <SelectItem value="pdf">PDF</SelectItem>
                   <SelectItem value="docx">DOCX</SelectItem>
+                  <SelectItem value="markdown">Markdown</SelectItem>
                   <SelectItem value="ai-chat">AI Chat</SelectItem>
                 </SelectContent>
               </Select>
