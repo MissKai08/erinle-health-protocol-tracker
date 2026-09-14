@@ -17,10 +17,10 @@ import { cn } from "@/lib/utils";
 interface Supplement {
   id: string;
   name: string;
-  category: string;
+  category: "supplement" | "prescription";
   dose: string;
   timing: string;
-  status: string;
+  status: "active" | "paused";
   conditions: string[];
   reason: string;
   prescriber?: string;
@@ -29,7 +29,22 @@ interface Supplement {
   updated_at: string;
 }
 
-const CONDITIONS = ["CIRS", "PEM", "Histamine", "MCAS"];
+const CONDITIONS = ["CIRS", "PEM", "Histamine", "MCAS"] as const;
+
+type Category = "supplement" | "prescription";
+type Status = "active" | "paused";
+
+interface FormState {
+  name: string;
+  category: Category;
+  dose: string;
+  timing: string;
+  status: Status;
+  conditions: string[];
+  reason: string;
+  prescriber: string;
+  refill_date: string;
+}
 
 export default function Supplements() {
   const { user } = useAuth();
@@ -40,9 +55,16 @@ export default function Supplements() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<string>("all");
   const [filterStatus, setFilterStatus] = useState<string>("all");
-  const [form, setForm] = useState({
-    name: "", category: "supplement" as const, dose: "", timing: "", status: "active" as const,
-    conditions: [] as string[], reason: "", prescriber: "", refill_date: "",
+  const [form, setForm] = useState<FormState>({
+    name: "",
+    category: "supplement",
+    dose: "",
+    timing: "",
+    status: "active",
+    conditions: [],
+    reason: "",
+    prescriber: "",
+    refill_date: "",
   });
 
   useEffect(() => {
@@ -65,8 +87,14 @@ export default function Supplements() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const payload = {
-      user_id: user!.id, name: form.name, category: form.category, dose: form.dose, timing: form.timing,
-      status: form.status, conditions: form.conditions, reason: form.reason,
+      user_id: user!.id,
+      name: form.name,
+      category: form.category,
+      dose: form.dose,
+      timing: form.timing,
+      status: form.status,
+      conditions: form.conditions,
+      reason: form.reason,
       prescriber: form.category === "prescription" ? form.prescriber : null,
       refill_date: form.category === "prescription" && form.refill_date ? form.refill_date : null,
     };
@@ -88,7 +116,17 @@ export default function Supplements() {
 
   const startEdit = (s: Supplement) => {
     setEditingId(s.id);
-    setForm({ name: s.name, category: s.category as any, dose: s.dose, timing: s.timing, status: s.status as any, conditions: s.conditions, reason: s.reason, prescriber: s.prescriber || "", refill_date: s.refill_date || "" });
+    setForm({
+      name: s.name,
+      category: s.category,
+      dose: s.dose,
+      timing: s.timing,
+      status: s.status,
+      conditions: s.conditions,
+      reason: s.reason,
+      prescriber: s.prescriber || "",
+      refill_date: s.refill_date || "",
+    });
     setShowForm(true);
   };
 
@@ -144,7 +182,7 @@ export default function Supplements() {
                 </div>
                 <div>
                   <Label htmlFor="scategory">Category</Label>
-                  <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v as any })}>
+                  <Select value={form.category} onValueChange={(v) => setForm({ ...form, category: v as Category })}>
                     <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="supplement">Supplement</SelectItem>
@@ -166,7 +204,7 @@ export default function Supplements() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="sstatus">Status</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as any })}>
+                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v as Status })}>
                     <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>

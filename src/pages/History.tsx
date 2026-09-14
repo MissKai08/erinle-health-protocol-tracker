@@ -12,25 +12,27 @@ import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, CheckCircle, XCirc
 import { cn } from "@/lib/utils";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay } from "date-fns";
 
+interface Supplement {
+  id: string;
+  name: string;
+  category: string;
+  dose: string;
+  timing: string;
+}
+
 interface DailyLogEntry {
   id: string;
   item_id: string;
   item_type: string;
   done: boolean;
   log_date: string;
-  supplements?: {
-    id: string;
-    name: string;
-    category: string;
-    dose: string;
-    timing: string;
-  };
+  supplements?: Supplement;
 }
 
 export default function History() {
   const { user } = useAuth();
   const [logEntries, setLogEntries] = useState<DailyLogEntry[]>([]);
-  const [supplements, setSupplements] = useState<Record<string, any>>({});
+  const [supplements, setSupplements] = useState<Record<string, Supplement>>({});
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -48,17 +50,17 @@ export default function History() {
 
     const { data: logData } = await supabase
       .from("daily_log")
-      .select("*, supplements(*) as supplements")
+      .select("*, supplements(*)")
       .eq("user_id", user!.id)
       .order("log_date", { ascending: false });
 
     const supplementsMap = (supplementsData || []).reduce((acc, s) => {
       acc[s.id] = s;
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, Supplement>);
 
     setSupplements(supplementsMap);
-    setLogEntries(logData || []);
+    setLogEntries((logData || []) as DailyLogEntry[]);
     setLoading(false);
   };
 

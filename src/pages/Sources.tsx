@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Library, Search, ChevronDown, ChevronUp, FileText, Calendar, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,8 @@ export default function Sources() {
   const [filterCondition, setFilterCondition] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [searching, setSearching] = useState(false);
+  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (user) fetchData();
@@ -41,29 +43,44 @@ export default function Sources() {
 
   const fetchData = async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("sources")
       .select("*")
       .eq("user_id", user!.id)
       .order("created_at", { ascending: false });
-    setSources(data || []);
+    if (!error) setSources(data || []);
     setLoading(false);
+  };
+
+  const runSearch = async (query: string) => {
+    setSearching(true);
+    if (!query.trim()) {
+      await fetchData();
+      setSearching(false);
+      return;
+    }
+    const { data, error } = await supabase
+      .from("sources")
+      .select("*")
+      .eq("user_id", user!.id)
+      .textSearch("search_vector", query)
+      .order("created_at", { ascending: false });
+    if (!error) setSources(data || []);
+    setSearching(false);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+    searchDebounceRef.current = setTimeout(() => runSearch(value), 300);
   };
 
   const filtered = useMemo(() => {
     let result = sources;
-    if (filterCondition !== "all") {
-      result = result.filter((s) => s.conditions?.includes(filterCondition));
-    }
-    if (filterType !== "all") {
-      result = result.filter((s) => s.source_type === filterType);
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      result = result.filter((s) => s.title.toLowerCase().includes(q) || (s.content || "").toLowerCase().includes(q));
-    }
+    if (filterCondition !== "all") result = result.filter((s) => s.conditions?.includes(filterCondition));
+    if (filterType !== "all") result = result.filter((s) => s.source_type === filterType);
     return result;
-  }, [sources, searchQuery, filterCondition, filterType]);
+  }, [sources, filterCondition, filterType]);
 
   if (loading) {
     return <div className="flex h-96 items-center justify-center"><div className="h-10 w-10 animate-spin rounded-full border-4 border-primary border-t-transparent" /></div>;
@@ -78,13 +95,12 @@ export default function Sources() {
         </div>
       </div>
 
-      {/* Search and filters */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search your library..."
             className="pl-10"
           />
@@ -107,6 +123,8 @@ export default function Sources() {
           </SelectContent>
         </Select>
       </div>
+
+      {searching && <div className="flex items-center gap-2 text-sm text-muted-foreground"><span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" /> Searching...</div>}
 
       {filtered.length === 0 ? (
         <Card><CardContent className="flex flex-col items-center justify-center py-12 text-center">
