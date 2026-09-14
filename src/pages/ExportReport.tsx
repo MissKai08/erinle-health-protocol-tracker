@@ -9,14 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { FileOutput, Download, Printer, Calendar, Pill, Activity, ClipboardList } from "lucide-react";
 import { cn } from "@/lib/utils";
-import {
-  Document,
-  Packer,
-  Paragraph,
-  TextRun,
-  HeadingLevel,
-  AlignmentType,
-} from "docx";
 
 interface Supplement {
   id: string;

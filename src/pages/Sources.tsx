@@ -31,7 +31,6 @@ export default function Sources() {
   const [sources, setSources] = useState<Source[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [searchDebounce, setSearchDebounce] = useState<ReturnType<typeof setTimeout> | null>(null);
   const [filterCondition, setFilterCondition] = useState<string>("all");
   const [filterType, setFilterType] = useState<string>("all");
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -40,34 +39,12 @@ export default function Sources() {
     if (user) fetchData();
   }, [user]);
 
-  useEffect(() => {
-    return () => {
-      if (searchDebounce) clearTimeout(searchDebounce);
-    };
-  }, [searchDebounce]);
-
   const fetchData = async () => {
     setLoading(true);
     const { data } = await supabase
       .from("sources")
       .select("*")
       .eq("user_id", user!.id)
-      .order("created_at", { ascending: false });
-    setSources(data || []);
-    setLoading(false);
-  };
-
-  const searchSources = async (query: string) => {
-    if (!query.trim()) {
-      fetchData();
-      return;
-    }
-    setLoading(true);
-    const { data } = await supabase
-      .from("sources")
-      .select("*")
-      .eq("user_id", user!.id)
-      .textSearch("search_vector", query)
       .order("created_at", { ascending: false });
     setSources(data || []);
     setLoading(false);
@@ -106,16 +83,11 @@ export default function Sources() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-          value={searchQuery}
-          onChange={(e) => {
-            const val = e.target.value;
-            setSearchQuery(val);
-            if (searchDebounce) clearTimeout(searchDebounce);
-            setSearchDebounce(setTimeout(() => searchSources(val), 300));
-          }}
-          placeholder="Search your library..."
-          className="pl-10"
-        />
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search your library..."
+            className="pl-10"
+          />
         </div>
         <Select value={filterCondition} onValueChange={setFilterCondition}>
           <SelectTrigger className="w-48"><SelectValue placeholder="Condition" /></SelectTrigger>
