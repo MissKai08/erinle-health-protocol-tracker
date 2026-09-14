@@ -48,16 +48,16 @@
 
 /* Erinlè Theme (Dark Colorful) */
 [data-theme="erinle"] {
-  --background: 222 47% 8%;
+  --background: 222 47% 12%;
   --foreground: 210 40% 98%;
 
-  --card: 217 33% 12%;
+  --card: 217 33% 16%;
   --card-foreground: 210 40% 98%;
 
-  --popover: 217 33% 12%;
+  --popover: 217 33% 16%;
   --popover-foreground: 210 40% 98%;
 
-  --primary: 160 84% 44%;
+  --primary: 199 89% 48%;
   --primary-foreground: 222 47% 11%;
 
   --secondary: 43 96% 56%;
@@ -74,18 +74,18 @@
 
   --border: 217 32% 25%;
   --input: 217 32% 25%;
-  --ring: 160 84% 44%;
+  --ring: 199 89% 48%;
 
   --radius: 0.75rem;
 
-  --sidebar-background: 222 47% 5%;
+  --sidebar-background: 222 47% 8%;
   --sidebar-foreground: 210 40% 98%;
-  --sidebar-primary: 160 84% 44%;
+  --sidebar-primary: 199 89% 48%;
   --sidebar-primary-foreground: 222 47% 11%;
   --sidebar-accent: 217 32% 15%;
   --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-border: 217 32% 22%;
-  --sidebar-ring: 160 84% 44%;
+  --sidebar-ring: 199 89% 48%;
 }
 
 @layer base {
