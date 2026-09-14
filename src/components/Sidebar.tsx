@@ -43,7 +43,7 @@ const navigation = [
 
 export function Sidebar() {
   const [collapsed, setCollapsed] = useState(false);
-  const [theme, setTheme] = useState<"default" | "erinle">("default");
+  const [theme, setTheme] = useState<"default" | "erinle">("erinle");
   const location = useLocation();
 
   useEffect(() => {
