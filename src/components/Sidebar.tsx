@@ -15,8 +15,6 @@ import {
   ChevronRight,
   Menu,
   X,
-  Moon,
-  Sun,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -197,7 +195,7 @@ export function Sidebar() {
                           onClick={() => handleThemeChange("default")}
                           aria-label="Default theme"
                         >
-                          <Moon className="h-4 w-4" />
+                          <span className="material-symbols-rounded">sparkle</span>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="right">Default</TooltipContent>
@@ -214,7 +212,7 @@ export function Sidebar() {
                           onClick={() => handleThemeChange("erinle")}
                           aria-label="Erinlè theme"
                         >
-                          <Sun className="h-4 w-4" />
+                          <span className="material-symbols-rounded">filter_none</span>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="right">Erinlè</TooltipContent>
