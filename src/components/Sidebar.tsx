@@ -195,7 +195,7 @@ export function Sidebar() {
                           onClick={() => handleThemeChange("default")}
                           aria-label="Default theme"
                         >
-                          <span className="material-symbols-rounded">sparkle</span>
+                          <span className="material-symbols-rounded">filter_none</span>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="right">Default</TooltipContent>
@@ -212,7 +212,7 @@ export function Sidebar() {
                           onClick={() => handleThemeChange("erinle")}
                           aria-label="Erinlè theme"
                         >
-                          <span className="material-symbols-rounded">filter_none</span>
+                          <span className="material-symbols-rounded">auto_awesome</span>
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent side="right">Erinlè</TooltipContent>
