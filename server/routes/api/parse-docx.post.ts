@@ -4,7 +4,8 @@ import { Document } from "docx";
 
 export default defineHandler(async (event) => {
   try {
-    const body = await readBody(event);
+    // Use type: "formData" to properly handle multipart/form-data uploads
+    const body = await readBody(event, { type: "formData" });
     const file = body?.file;
 
     if (!file) {
