@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Library, Search, ChevronDown, ChevronUp, FileText, Calendar, ExternalLink } from "lucide-react";
+import { Library, Search, ChevronDown, ChevronUp, FileText, Calendar, ExternalLink, Sparkles, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 
 interface Source {
@@ -28,14 +29,15 @@ const CONDITIONS = ["CIRS", "PEM", "Histamine", "MCAS"];
 
 export default function Sources() {
   const { user } = useAuth();
-  const [sources, setSources] = useState<Source[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filterCondition, setFilterCondition] = useState<string>("all");
-  const [filterType, setFilterType] = useState<string>("all");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const [searching, setSearching] = useState(false);
-  const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const [sources, setSources] = useState<Source[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [filterCondition, setFilterCondition] = useState<string>("all");
+    const [filterType, setFilterType] = useState<string>("all");
+    const [expandedId, setExpandedId] = useState<string | null>(null);
+    const [searching, setSearching] = useState(false);
+    const [promotingToProtocol, setPromotingToProtocol] = useState<string | null>(null);
+    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (user) fetchData();
@@ -70,12 +72,40 @@ export default function Sources() {
   };
 
   const handleSearchChange = (value: string) => {
-    setSearchQuery(value);
-    if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
-    searchDebounceRef.current = setTimeout(() => runSearch(value), 300);
-  };
-
-  const filtered = useMemo(() => {
+      setSearchQuery(value);
+      if (searchDebounceRef.current) clearTimeout(searchDebounceRef.current);
+      searchDebounceRef.current = setTimeout(() => runSearch(value), 300);
+    };
+  
+    const promoteToProtocol = async (source: Source) => {
+      setPromotingToProtocol(source.id);
+      try {
+        const { error } = await supabase
+          .from("protocols")
+          .insert({
+            user_id: user!.id,
+            title: source.title,
+            type: "daily-schedule",
+            content: source.content,
+            conditions: source.conditions || [],
+          });
+        if (error) throw error;
+        toast({
+          title: "Protocol created",
+          description: `"${source.title}" was promoted to a protocol.`,
+        });
+      } catch {
+        toast({
+          title: "Failed to promote",
+          description: "There was an error creating the protocol.",
+          variant: "destructive",
+        });
+      } finally {
+        setPromotingToProtocol(null);
+      }
+    };
+  
+    const filtered = useMemo(() => {
     let result = sources;
     if (filterCondition !== "all") result = result.filter((s) => s.conditions?.includes(filterCondition));
     if (filterType !== "all") result = result.filter((s) => s.source_type === filterType);
@@ -149,30 +179,44 @@ export default function Sources() {
                   </div>
                 </CardHeader>
                 {isExpanded && (
-                  <CardContent className="pt-0">
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {s.date_captured}</span>
-                      <span>{new Date(s.created_at).toLocaleDateString()}</span>
-                    </div>
-                    {s.conditions?.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mb-3">
-                        {s.conditions.map((c) => <Badge key={c} variant="secondary">{c}</Badge>)}
-                      </div>
-                    )}
-                    <div className="prose dark:prose-invert max-w-none text-sm mb-4">
-                      <ReactMarkdown>{s.content}</ReactMarkdown>
-                    </div>
-                    {s.original_file_url && (
-                      <div className="mb-3">
-                        <Button variant="link" size="sm" asChild>
-                          <a href={s.original_file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                            <ExternalLink className="h-3 w-3" /> Original File
-                          </a>
-                        </Button>
-                      </div>
-                    )}
-                  </CardContent>
-                )}
+                                  <CardContent className="pt-0">
+                                    <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                                      <span className="flex items-center gap-1"><Calendar className="h-3 w-3" /> {s.date_captured}</span>
+                                      <span>{new Date(s.created_at).toLocaleDateString()}</span>
+                                    </div>
+                                    {s.conditions?.length > 0 && (
+                                      <div className="flex flex-wrap gap-2 mb-3">
+                                        {s.conditions.map((c) => <Badge key={c} variant="secondary">{c}</Badge>)}
+                                      </div>
+                                    )}
+                                    <div className="prose dark:prose-invert max-w-none text-sm mb-4">
+                                      <ReactMarkdown>{s.content}</ReactMarkdown>
+                                    </div>
+                                    {s.original_file_url && (
+                                      <div className="mb-3">
+                                        <Button variant="link" size="sm" asChild>
+                                          <a href={s.original_file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
+                                            <ExternalLink className="h-3 w-3" /> Original File
+                                          </a>
+                                        </Button>
+                                      </div>
+                                    )}
+                                    <div className="mt-4 pt-4 border-t">
+                                      <Button
+                                        onClick={() => promoteToProtocol(s)}
+                                        className="w-full bg-primary hover:bg-primary/90"
+                                        disabled={promotingToProtocol === s.id}
+                                      >
+                                        {promotingToProtocol === s.id ? (
+                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        ) : (
+                                          <Sparkles className="mr-2 h-4 w-4" />
+                                        )}
+                                        {promotingToProtocol === s.id ? "Promoting..." : "Promote to Protocol"}
+                                      </Button>
+                                    </div>
+                                  </CardContent>
+                                )}
               </Card>
             );
           })}
