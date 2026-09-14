@@ -6,7 +6,7 @@
 
 /* Default Theme (Dark) */
 :root {
-  --background: 222 47% 11%;
+  --background: 273 29% 25%;
   --foreground: 210 40% 98%;
 
   --card: 217 33% 17%;
@@ -48,13 +48,13 @@
 
 /* Erinlè Theme (Dark Colorful) */
 [data-theme="erinle"] {
-  --background: 222 47% 12%;
+  --background: 273 29% 25%;
   --foreground: 210 40% 98%;
 
-  --card: 217 33% 16%;
+  --card: 217 33% 17%;
   --card-foreground: 210 40% 98%;
 
-  --popover: 217 33% 16%;
+  --popover: 217 33% 17%;
   --popover-foreground: 210 40% 98%;
 
   --primary: 199 89% 48%;
@@ -82,7 +82,7 @@
   --sidebar-foreground: 210 40% 98%;
   --sidebar-primary: 199 89% 48%;
   --sidebar-primary-foreground: 222 47% 11%;
-  --sidebar-accent: 217 32% 15%;
+  --sidebar-accent: 217 33% 17%;
   --sidebar-accent-foreground: 210 40% 98%;
   --sidebar-border: 14 100% 57%;
   --sidebar-ring: 14 100% 57%;
