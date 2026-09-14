@@ -72,9 +72,9 @@
   --destructive: 0 63% 31%;
   --destructive-foreground: 210 40% 98%;
 
-  --border: 217 32% 25%;
-  --input: 217 32% 25%;
-  --ring: 199 89% 48%;
+  --border: 14 100% 57%;
+  --input: 14 100% 57%;
+  --ring: 14 100% 57%;
 
   --radius: 0.75rem;
 
@@ -84,8 +84,8 @@
   --sidebar-primary-foreground: 222 47% 11%;
   --sidebar-accent: 217 32% 15%;
   --sidebar-accent-foreground: 210 40% 98%;
-  --sidebar-border: 217 32% 22%;
-  --sidebar-ring: 199 89% 48%;
+  --sidebar-border: 14 100% 57%;
+  --sidebar-ring: 14 100% 57%;
 }
 
 @layer base {
