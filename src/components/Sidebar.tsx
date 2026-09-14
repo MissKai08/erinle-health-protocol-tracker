@@ -58,8 +58,8 @@ export function Sidebar() {
         {/* Logo / Brand */}
         <div className="flex items-center justify-between h-16 px-4 border-b border-sidebar-border">
           <Link to="/" className="flex items-center gap-3" aria-label="Erinlè Health">
-            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-primary-foreground" />
+            <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+              <img src="/icon.png" className="w-5 h-5 object-contain" alt="Erinlè" />
             </div>
             {!collapsed && (
               <span className="font-heading font-bold text-lg text-sidebar-foreground">
