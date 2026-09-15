@@ -194,10 +194,22 @@ export default function Sources() {
                                     </div>
                                     {s.original_file_url && (
                                       <div className="mb-3">
-                                        <Button variant="link" size="sm" asChild>
-                                          <a href={s.original_file_url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1">
-                                            <ExternalLink className="h-3 w-3" /> Original File
-                                          </a>
+                                        <Button
+                                          variant="link"
+                                          size="sm"
+                                          onClick={async (e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            const { data } = await supabase.storage
+                                              .from("library-uploads")
+                                              .getSignedUrl(s.original_file_url!);
+                                            if (data?.signedUrl) {
+                                              window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                                            }
+                                          }}
+                                          className="flex items-center gap-1"
+                                        >
+                                          <ExternalLink className="h-3 w-3" /> Original File
                                         </Button>
                                       </div>
                                     )}
