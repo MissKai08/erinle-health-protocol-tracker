@@ -200,9 +200,17 @@ export default function Sources() {
                                           onClick={async (e) => {
                                             e.preventDefault();
                                             e.stopPropagation();
-                                            const { data } = await supabase.storage
+                                            const { data, error } = await supabase.storage
                                               .from("library-uploads")
                                               .getSignedUrl(s.original_file_url!);
+                                            if (error) {
+                                              toast({
+                                                title: "Unable to open file",
+                                                description: "The original file could not be accessed.",
+                                                variant: "destructive",
+                                              });
+                                              return;
+                                            }
                                             if (data?.signedUrl) {
                                               window.open(data.signedUrl, "_blank", "noopener,noreferrer");
                                             }
