@@ -17,8 +17,8 @@ export default defineHandler(async (event) => {
     const zip = new JSZip();
     const zipContents = await zip.loadAsync(buffer);
     
-    const documentXml = await zipContents.file("word/document.xml")?.asText();
-    
+    const documentXml = await zipContents.file("word/document.xml")?.async("string");
+
     if (!documentXml) {
       throw createError({ statusCode: 400, statusMessage: "Invalid DOCX file: missing document.xml" });
     }

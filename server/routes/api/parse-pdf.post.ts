@@ -1,6 +1,6 @@
 import { defineHandler } from "nitro";
 import { readFormData, createError } from "nitro/h3";
-import * as pdfParse from "pdf-parse";
+import { PDFParse } from "pdf-parse";
 
 export default defineHandler(async (event) => {
   try {
@@ -13,9 +13,14 @@ export default defineHandler(async (event) => {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const data = await pdfParse.default(buffer);
 
-    return { text: data.text || "(No text could be extracted from this PDF)" };
+    // pdf-parse v2 exposes a class-based API
+    const parser = new PDFParse({ data: new Uint8Array(buffer) });
+    const result = await parser.getText();
+
+    await parser.destroy();
+
+    return { text: result.text || "(No text could be extracted from this PDF)" };
   } catch (err) {
     throw createError({
       statusCode: 500,

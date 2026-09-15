@@ -131,63 +131,55 @@ export default function Upload() {
   };
 
   const parsePdfToMarkdown = async (file: File): Promise<string> => {
-    try {
-      // Use the server-side Nitro route for PDF parsing
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/parse-pdf", {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        // Try to read the actual error message from the response
-        let errorMessage = "PDF parsing failed";
-        try {
-          const errorData = await response.json();
-          if (errorData && errorData.message) {
-            errorMessage = errorData.message;
-          }
-        } catch {
-          // If we can't parse JSON, use the status text
-          errorMessage = response.statusText || errorMessage;
+    // Use the server-side Nitro route for PDF parsing
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch("/api/parse-pdf", {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      // Try to read the actual error message from the response
+      let errorMessage = "PDF parsing failed";
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.message) {
+          errorMessage = errorData.message;
         }
-        throw new Error(errorMessage);
+      } catch {
+        // If we can't parse JSON, use the status text
+        errorMessage = response.statusText || errorMessage;
       }
-      const data = await response.json();
-      return data.text || "(No text could be extracted from this PDF)";
-    } catch (err) {
-      return `Unable to parse PDF: ${err instanceof Error ? err.message : "Unknown error"}. Please try converting to DOCX or HTML.`;
+      throw new Error(errorMessage);
     }
+    const data = await response.json();
+    return data.text || "(No text could be extracted from this PDF)";
   };
 
   const parseDocxToMarkdown = async (file: File): Promise<string> => {
-    try {
-      // Use the server-side Nitro route for DOCX parsing
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch("/api/parse-docx", {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) {
-        // Try to read the actual error message from the response
-        let errorMessage = "DOCX parsing failed";
-        try {
-          const errorData = await response.json();
-          if (errorData && errorData.message) {
-            errorMessage = errorData.message;
-          }
-        } catch {
-          // If we can't parse JSON, use the status text
-          errorMessage = response.statusText || errorMessage;
+    // Use the server-side Nitro route for DOCX parsing
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await fetch("/api/parse-docx", {
+      method: "POST",
+      body: formData,
+    });
+    if (!response.ok) {
+      // Try to read the actual error message from the response
+      let errorMessage = "DOCX parsing failed";
+      try {
+        const errorData = await response.json();
+        if (errorData && errorData.message) {
+          errorMessage = errorData.message;
         }
-        throw new Error(errorMessage);
+      } catch {
+        // If we can't parse JSON, use the status text
+        errorMessage = response.statusText || errorMessage;
       }
-      const data = await response.json();
-      return data.text || "(No text could be extracted from this DOCX)";
-    } catch (err) {
-      return `Unable to parse DOCX: ${err instanceof Error ? err.message : "Unknown error"}.`;
+      throw new Error(errorMessage);
     }
+    const data = await response.json();
+    return data.text || "(No text could be extracted from this DOCX)";
   };
 
   const handleUpload = async () => {
