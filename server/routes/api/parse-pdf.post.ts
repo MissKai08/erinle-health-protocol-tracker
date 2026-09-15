@@ -1,12 +1,12 @@
 import { defineHandler } from "nitro";
-import { readBody, createError } from "nitro/h3";
+import { readFormData, createError } from "nitro/h3";
 import * as pdfParse from "pdf-parse";
 
 export default defineHandler(async (event) => {
   try {
-    // Use type: "formData" to properly handle multipart/form-data uploads
-    const body = await readBody(event, { type: "formData" });
-    const file = body?.file;
+    // Use readFormData to properly handle multipart/form-data uploads
+    const formData = await readFormData(event);
+    const file = formData.get("file");
 
     if (!file) {
       throw createError({ statusCode: 400, statusMessage: "No file provided" });
