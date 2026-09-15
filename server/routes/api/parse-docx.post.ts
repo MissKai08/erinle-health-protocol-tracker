@@ -1,10 +1,9 @@
 import { defineHandler } from "nitro";
 import { readFormData, createError } from "nitro/h3";
-import { Document } from "docx";
+import JSZip from "jszip";
 
 export default defineHandler(async (event) => {
   try {
-    // Use readFormData to properly handle multipart/form-data uploads
     const formData = await readFormData(event);
     const file = formData.get("file");
 
@@ -13,8 +12,19 @@ export default defineHandler(async (event) => {
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const doc = await Document.load(buffer);
-    const text = doc.getParagraphs().map((p) => p.getText()).join("\n");
+    
+    // DOCX is a ZIP archive containing word/document.xml
+    const zip = new JSZip();
+    const zipContents = await zip.loadAsync(buffer);
+    
+    const documentXml = zipContents.file("word/document.xml")?.asText();
+    
+    if (!documentXml) {
+      throw createError({ statusCode: 400, statusMessage: "Invalid DOCX file: missing document.xml" });
+    }
+
+    // Extract text from WordprocessingML
+    const text = extractTextFromDocxXml(documentXml);
 
     return { text: text || "(No text could be extracted from this DOCX)" };
   } catch (err) {
@@ -24,3 +34,18 @@ export default defineHandler(async (event) => {
     });
   }
 });
+
+function extractTextFromDocxXml(xml: string): string {
+  // Remove XML namespaces and tags, extract text content
+  return xml
+    .replace(/<w:[^>]*>/g, "") // Remove Word tags
+    .replace(/<\/w:[^>]*>/g, " ") // Remove closing Word tags
+    .replace(/&w[0-9]+;/g, " ") // Remove Word entity references
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/\s+/g, " ") // Normalize whitespace
+    .trim();
+}
