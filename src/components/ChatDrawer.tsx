@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabaseClient";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+// ScrollArea is replaced with a plain scrollable div so the scrollRef targets the actual scroll container
 import { toast } from "@/components/ui/use-toast";
 import {
   MessageSquare,
@@ -257,8 +257,7 @@ Would you like me to save this research to your Sources?`;
             </div>
 
             {/* Messages */}
-            <ScrollArea className="flex-1 p-4">
-              <div ref={scrollRef} className="space-y-4">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto p-4">
                 {messages.length === 0 && (
                   <div className="flex flex-col items-center justify-center py-8 text-center">
                     <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-3">
@@ -330,7 +329,7 @@ Would you like me to save this research to your Sources?`;
                   </div>
                 )}
               </div>
-            </ScrollArea>
+            </div>
 
             {/* Input */}
             <div className="p-3 border-t border-border">
