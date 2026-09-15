@@ -180,14 +180,14 @@ INSERT INTO storage.buckets (id, name, public)
 VALUES ('library-uploads', 'library-uploads', false)
 ON CONFLICT (id) DO NOTHING;
 
-CREATE POLICY "Service can read library-uploads" ON storage.objects
-  FOR SELECT USING (bucket_id = 'library-uploads');
+CREATE POLICY "Authenticated users can read library-uploads" ON storage.objects
+  FOR SELECT TO authenticated USING (bucket_id = 'library-uploads');
 
 CREATE POLICY "Service can write library-uploads" ON storage.objects
-  FOR INSERT WITH CHECK (bucket_id = 'library-uploads');
+  FOR INSERT TO service_role WITH CHECK (bucket_id = 'library-uploads');
 
 CREATE POLICY "Service can update library-uploads" ON storage.objects
-  FOR UPDATE USING (bucket_id = 'library-uploads');
+  FOR UPDATE TO service_role USING (bucket_id = 'library-uploads');
 
 CREATE POLICY "Service can delete library-uploads" ON storage.objects
-  FOR DELETE USING (bucket_id = 'library-uploads');
+  FOR DELETE TO service_role USING (bucket_id = 'library-uploads');

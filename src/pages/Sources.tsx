@@ -193,34 +193,41 @@ export default function Sources() {
                                       <ReactMarkdown>{s.content}</ReactMarkdown>
                                     </div>
                                     {s.original_file_url && (
-                                      <div className="mb-3">
-                                        <Button
-                                          variant="link"
-                                          size="sm"
-                                          onClick={async (e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            const { data, error } = await supabase.storage
-                                              .from("library-uploads")
-                                              .getSignedUrl(s.original_file_url!);
-                                            if (error) {
-                                              toast({
-                                                title: "Unable to open file",
-                                                description: "The original file could not be accessed.",
-                                                variant: "destructive",
-                                              });
-                                              return;
-                                            }
-                                            if (data?.signedUrl) {
-                                              window.open(data.signedUrl, "_blank", "noopener,noreferrer");
-                                            }
-                                          }}
-                                          className="flex items-center gap-1"
-                                        >
-                                          <ExternalLink className="h-3 w-3" /> Original File
-                                        </Button>
-                                      </div>
-                                    )}
+                                                                          <div className="mb-3">
+                                                                            <a
+                                                                              href="#"
+                                                                              className="flex items-center gap-1 text-primary underline underline-offset-2 hover:text-primary/80"
+                                                                              onClick={async (e) => {
+                                                                                e.preventDefault();
+                                                                                e.stopPropagation();
+                                                                                try {
+                                                                                  const { data, error } = await supabase.storage
+                                                                                                                                  .from("library-uploads")
+                                                                                                                                  .createSignedUrl(s.original_file_url!, 60);
+                                                                                  if (error) {
+                                                                                    toast({
+                                                                                      title: "Unable to open file",
+                                                                                      description: "The original file could not be accessed.",
+                                                                                      variant: "destructive",
+                                                                                    });
+                                                                                    return;
+                                                                                  }
+                                                                                  if (data?.signedUrl) {
+                                                                                    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                                                                                  }
+                                                                                } catch {
+                                                                                  toast({
+                                                                                    title: "Unable to open file",
+                                                                                    description: "The original file could not be accessed.",
+                                                                                    variant: "destructive",
+                                                                                  });
+                                                                                }
+                                                                              }}
+                                                                            >
+                                                                              <ExternalLink className="h-3 w-3" /> Original File
+                                                                            </a>
+                                                                          </div>
+                                                                        )}
                                     <div className="mt-4 pt-4 border-t">
                                       <Button
                                         onClick={() => promoteToProtocol(s)}
