@@ -7,8 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Library, Search, ChevronDown, ChevronUp, FileText, Calendar, ExternalLink, Sparkles, Loader2 } from "lucide-react";
+import { Library, Search, ChevronDown, ChevronUp, FileText, Calendar, ExternalLink, Sparkles, Loader2, Edit3, Trash2, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
@@ -36,8 +38,11 @@ export default function Sources() {
     const [filterType, setFilterType] = useState<string>("all");
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [searching, setSearching] = useState(false);
-    const [promotingToProtocol, setPromotingToProtocol] = useState<string | null>(null);
-    const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+        const [promotingToProtocol, setPromotingToProtocol] = useState<string | null>(null);
+        const [showForm, setShowForm] = useState(false);
+        const [editingId, setEditingId] = useState<string | null>(null);
+        const [form, setForm] = useState({ title: "", source_type: "article" as string, content: "", conditions: "" });
+        const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (user) fetchData();
@@ -78,32 +83,57 @@ export default function Sources() {
     };
   
     const promoteToProtocol = async (source: Source) => {
-      setPromotingToProtocol(source.id);
-      try {
-        const { error } = await supabase
-          .from("protocols")
-          .insert({
-            user_id: user!.id,
-            title: source.title,
-            type: "daily-schedule",
-            content: source.content,
-            conditions: source.conditions || [],
-          });
-        if (error) throw error;
-        toast({
-          title: "Protocol created",
-          description: `"${source.title}" was promoted to a protocol.`,
-        });
-      } catch {
-        toast({
-          title: "Failed to promote",
-          description: "There was an error creating the protocol.",
-          variant: "destructive",
-        });
-      } finally {
-        setPromotingToProtocol(null);
-      }
-    };
+          setPromotingToProtocol(source.id);
+          try {
+            const { error } = await supabase
+              .from("protocols")
+              .insert({
+                user_id: user!.id,
+                title: source.title,
+                type: "daily-schedule",
+                content: source.content,
+                conditions: source.conditions || [],
+              });
+            if (error) throw error;
+            toast({
+              title: "Protocol created",
+              description: `"${source.title}" was promoted to a protocol.`,
+            });
+          } catch {
+            toast({
+              title: "Failed to promote",
+              description: "There was an error creating the protocol.",
+              variant: "destructive",
+            });
+          } finally {
+            setPromotingToProtocol(null);
+          }
+        };
+    
+        const handleSubmit = async (e: React.FormEvent) => {
+          e.preventDefault();
+          const conditions = form.conditions.split(",").map((c) => c.trim()).filter(Boolean);
+          if (editingId) {
+            await supabase.from("sources").update({ title: form.title, source_type: form.source_type, content: form.content, conditions }).eq("id", editingId);
+            setEditingId(null);
+          } else {
+            await supabase.from("sources").insert({ user_id: user!.id, title: form.title, source_type: form.source_type, content: form.content, conditions: conditions.length > 0 ? conditions : [], date_captured: new Date().toISOString().split("T")[0] });
+          }
+          setShowForm(false);
+          setForm({ title: "", source_type: "article", content: "", conditions: "" });
+          fetchData();
+        };
+    
+        const handleDelete = async (id: string) => {
+          await supabase.from("sources").delete().eq("id", id);
+          fetchData();
+        };
+    
+        const startEdit = (s: Source) => {
+          setEditingId(s.id);
+          setForm({ title: s.title, source_type: s.source_type, content: s.content, conditions: s.conditions.join(", ") });
+          setShowForm(true);
+        };
   
     const filtered = useMemo(() => {
     let result = sources;
@@ -119,11 +149,14 @@ export default function Sources() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
-        <div>
-          <h1 className="font-heading text-3xl font-bold">Sources</h1>
-          <p className="text-sm text-muted-foreground mt-1">Your research library and saved sources</p>
-        </div>
-      </div>
+              <div>
+                <h1 className="font-heading text-3xl font-bold">Sources</h1>
+                <p className="text-sm text-muted-foreground mt-1">Your research library and saved sources</p>
+              </div>
+              <Button onClick={() => { setEditingId(null); setForm({ title: "", source_type: "article", content: "", conditions: "" }); setShowForm(true); }} className="bg-primary hover:bg-primary/90">
+                <Plus className="mr-2 h-4 w-4" /> Add Source
+              </Button>
+            </div>
 
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="relative flex-1">
@@ -155,8 +188,49 @@ export default function Sources() {
       </div>
 
       {searching && <div className="flex items-center gap-2 text-sm text-muted-foreground"><span className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" /> Searching...</div>}
-
-      {filtered.length === 0 ? (
+      
+            {showForm && (
+              <Card className="glass">
+                <CardHeader><CardTitle className="text-lg font-heading">{editingId ? "Edit Source" : "New Source"}</CardTitle></CardHeader>
+                <CardContent>
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    <div>
+                      <Label htmlFor="stitle">Title</Label>
+                      <Input id="stitle" value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Source title" className="mt-2" required />
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="stype">Source Type</Label>
+                        <Select value={form.source_type} onValueChange={(v) => setForm({ ...form, source_type: v as any })} >
+                          <SelectTrigger className="mt-2"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                                                      <SelectItem value="article">Article</SelectItem>
+                                                      <SelectItem value="pdf">PDF</SelectItem>
+                                                      <SelectItem value="docx">DOCX</SelectItem>
+                                                      <SelectItem value="markdown">Markdown</SelectItem>
+                                                      <SelectItem value="ai-chat">AI Chat</SelectItem>
+                                                    </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="sconditions">Conditions (comma-separated)</Label>
+                        <Input id="sconditions" value={form.conditions} onChange={(e) => setForm({ ...form, conditions: e.target.value })} placeholder="CIRS, PEM, Histamine" className="mt-2" />
+                      </div>
+                    </div>
+                    <div>
+                      <Label htmlFor="scontent">Content (Markdown)</Label>
+                      <Textarea id="scontent" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} placeholder="Write your source content here..." className="mt-2 min-h-[120px]" required />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button type="submit" className="bg-primary hover:bg-primary/90">{editingId ? "Update" : "Create"}</Button>
+                      <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditingId(null); }}>Cancel</Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+      
+            {filtered.length === 0 ? (
         <Card><CardContent className="flex flex-col items-center justify-center py-12 text-center">
           <Library className="h-12 w-12 text-primary/30 mb-4" />
           <h3 className="font-heading text-lg font-semibold mb-2">No sources found</h3>
@@ -228,20 +302,24 @@ export default function Sources() {
                                                                             </a>
                                                                           </div>
                                                                         )}
-                                    <div className="mt-4 pt-4 border-t">
-                                      <Button
-                                        onClick={() => promoteToProtocol(s)}
-                                        className="w-full bg-primary hover:bg-primary/90"
-                                        disabled={promotingToProtocol === s.id}
-                                      >
-                                        {promotingToProtocol === s.id ? (
-                                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                        ) : (
-                                          <Sparkles className="mr-2 h-4 w-4" />
-                                        )}
-                                        {promotingToProtocol === s.id ? "Promoting..." : "Promote to Protocol"}
-                                      </Button>
-                                    </div>
+                                    <div className="mt-4 pt-4 border-t space-y-2">
+                                                                          <div className="flex items-center gap-2">
+                                                                            <Button variant="outline" size="sm" onClick={() => startEdit(s)}><Edit3 className="mr-1.5 h-3.5 w-3.5" /> Edit</Button>
+                                                                            <Button variant="destructive" size="sm" onClick={() => handleDelete(s.id)}><Trash2 className="mr-1.5 h-3.5 w-3.5" /> Delete</Button>
+                                                                          </div>
+                                                                          <Button
+                                                                            onClick={() => promoteToProtocol(s)}
+                                                                            className="w-full bg-primary hover:bg-primary/90"
+                                                                            disabled={promotingToProtocol === s.id}
+                                                                          >
+                                                                            {promotingToProtocol === s.id ? (
+                                                                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                                                            ) : (
+                                                                              <Sparkles className="mr-2 h-4 w-4" />
+                                                                            )}
+                                                                            {promotingToProtocol === s.id ? "Promoting..." : "Promote to Protocol"}
+                                                                          </Button>
+                                                                        </div>
                                   </CardContent>
                                 )}
               </Card>
