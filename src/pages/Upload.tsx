@@ -139,7 +139,20 @@ export default function Upload() {
         method: "POST",
         body: formData,
       });
-      if (!response.ok) throw new Error("PDF parsing failed");
+      if (!response.ok) {
+        // Try to read the actual error message from the response
+        let errorMessage = "PDF parsing failed";
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch {
+          // If we can't parse JSON, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
       const data = await response.json();
       return data.text || "(No text could be extracted from this PDF)";
     } catch (err) {
@@ -156,7 +169,20 @@ export default function Upload() {
         method: "POST",
         body: formData,
       });
-      if (!response.ok) throw new Error("DOCX parsing failed");
+      if (!response.ok) {
+        // Try to read the actual error message from the response
+        let errorMessage = "DOCX parsing failed";
+        try {
+          const errorData = await response.json();
+          if (errorData && errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch {
+          // If we can't parse JSON, use the status text
+          errorMessage = response.statusText || errorMessage;
+        }
+        throw new Error(errorMessage);
+      }
       const data = await response.json();
       return data.text || "(No text could be extracted from this DOCX)";
     } catch (err) {
